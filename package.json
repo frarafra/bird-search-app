@@ -1,0 +1,25 @@
+{
+  "name": "bird-search-app",
+  "version": "1.0.0",
+  "description": "A Next.js application for searching bird data using eBird API.",
+  "main": "src/app/page.tsx",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-leaflet": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.20",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "typescript": "latest"
+  },
+  "license": "MIT"
+}

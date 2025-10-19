@@ -1,0 +1,4 @@
+.continue
+.env
+dist/
+node_modules
