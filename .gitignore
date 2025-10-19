@@ -1,4 +1,4 @@
 .continue
 .env
-dist/
+/.next/
 node_modules

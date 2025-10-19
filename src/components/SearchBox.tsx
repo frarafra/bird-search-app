@@ -10,7 +10,7 @@ interface SearchBoxProps {
 
 const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     const [bird, setBird] = useState('');
-    const [observations, setObservations] = useState({});
+    const [observations, setObservations] = useState<Record<string, string>>({});
     const [suggestions, setSuggestions] = useState<string[]>([]);
 
     useEffect(() => {

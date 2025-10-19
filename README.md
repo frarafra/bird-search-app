@@ -11,6 +11,7 @@ bird-search-app
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── components
+│   │   ├── Map.tsx
 │   │   ├── SearchBox.tsx
 │   │   └── SearchResults.tsx
 │   ├── lib
