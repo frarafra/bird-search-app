@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 
+const Map = dynamic(() => import('../components/Map'), {
+    ssr: false,
+});
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
-import Map from '../components/Map'; 
 import { ebirdSearch, lat, lng } from './api/ebird';
 import { Result } from '../types';
 
