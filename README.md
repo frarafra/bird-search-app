@@ -1,7 +1,7 @@
 # Bird Search App
 
 ## Overview
-The Bird Search App is a Next.js application that allows users to search for bird species using the eBird API. It features a search box for user input and displays the search results in a list format.
+The Bird Search App is a Next.js application that allows users to search for bird species using the eBird API. It features a search box for user input and displays the search results in a list format and in a map.
 
 ## Project Structure
 ```
