@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { ebirdObservationSearch } from '../app/api/ebird';
+import { ebirdObservationSearch, ebirdTaxonomySearch } from '../app/api/ebird';
 
 interface SearchBoxProps {
     onSearch: (bird: string) => void;
@@ -12,6 +12,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     const [bird, setBird] = useState('');
     const [observations, setObservations] = useState<Record<string, string>>({});
     const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [taxonomies, setTaxonomies] = useState<Record<string, string>>({});
 
     useEffect(() => {
         ebirdObservationSearch(lat.toString(), lng.toString()).then((observations) => {
@@ -23,11 +24,29 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     }, [lat, lng]);
 
     useEffect(() => {
+        const speciesCodes = Object.values(observations);
+
+        if (speciesCodes.length > 0) {
+            const taxonomyData = ebirdTaxonomySearch(speciesCodes);
+            setTaxonomies(taxonomyData);
+        }
+    }, [observations]);
+
+    useEffect(() => {
         if (bird.length > 0) {
             const filteredSuggestions = Object.keys(observations).filter(suggestion =>
                 suggestion.toLowerCase().includes(bird.toLowerCase())
-            );
-            setSuggestions(filteredSuggestions.sort());
+            ).sort();
+            
+            if (bird.length > 4 && taxonomies[observations[filteredSuggestions[0]]]) {
+                const firstFamily = taxonomies[observations[filteredSuggestions[0]]];
+                filteredSuggestions.push(...Object.keys(observations).filter(suggestion =>
+                    !filteredSuggestions.includes(suggestion)
+                    && taxonomies[observations[suggestion]] === firstFamily
+                ).slice(0, 4 - (filteredSuggestions.length > 1 ? 1 : 0)));
+            }
+
+            setSuggestions(filteredSuggestions);
         } else {
             setSuggestions([]);
         }

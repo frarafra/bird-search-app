@@ -8,13 +8,16 @@ const Map = dynamic(() => import('../components/Map'), {
 });
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
-import { ebirdSearch, lat, lng } from './api/ebird';
+import { ebirdSearch } from './api/ebird';
 import { Result } from '../types';
 
 const Page = () => {
     const [results, setResults] = useState([]);
     const [hoveredResultId, setHoveredResultId] = useState<number | null>(null);
-    const [mapCenter, setMapCenter] = useState({ lat: parseFloat(lat), lng: parseFloat(lng) });
+    const [mapCenter, setMapCenter] = useState({
+        lat: parseFloat(process.env.NEXT_PUBLIC_LAT || '0'),
+        lng: parseFloat(process.env.NEXT_PUBLIC_LNG || '0') 
+    });
 
     const handleSearch = async (bird: string) => {
         if (!mapCenter.lat || !mapCenter.lng) return;

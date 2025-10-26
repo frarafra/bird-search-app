@@ -5,7 +5,6 @@ import Leaflet from 'leaflet';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 
 import { Result } from '../types';
-import { calculateBounds } from '../utils/mapUtils';
 
 interface MapProps {
     lat: number;
@@ -54,8 +53,6 @@ const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (newCenter: { lat: number,
   };
   
 const Map: React.FC<MapProps> = ({ lat, lng, results, hoveredResultId, onMoveEnd }) => {
-  const bounds = calculateBounds(results.slice(0, 10)); 
-
   return (
       <MapContainer center={[lat, lng]} zoom={9} style={{ height: "100%", width: "100%" }}>
           <TileLayer
