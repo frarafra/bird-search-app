@@ -7,7 +7,7 @@ interface SearchResultsProps {
     setHoveredResultId: (id: number | null) => void;
 }
 
-const EBIRD_SPECIES_URL = 'https://ebird.org/species/';
+export const EBIRD_SPECIES_URL = 'https://ebird.org/species/';
 
 const SearchResults: React.FC<SearchResultsProps> = ({ results, setHoveredResultId }) => {
     return (

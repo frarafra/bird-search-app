@@ -1,28 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import dynamic from 'next/dynamic';
+
+import { BirdContext } from '../contexts/BirdContext';
+import { ebirdSearch } from '../api/ebird';
+import SearchBox from '../components/SearchBox';
+import SearchResults from '../components/SearchResults';
+import { Result } from '../types';
 
 const Map = dynamic(() => import('../components/Map'), {
     ssr: false,
 });
-import SearchBox from '../components/SearchBox';
-import SearchResults from '../components/SearchResults';
-import { ebirdSearch } from './api/ebird';
-import { Result } from '../types';
 
-const Page = () => {
+const HomePage = () => {
+    const { mapCenter, setMapCenter } = useContext(BirdContext);
     const [results, setResults] = useState([]);
     const [hoveredResultId, setHoveredResultId] = useState<number | null>(null);
-    const [mapCenter, setMapCenter] = useState({
-        lat: parseFloat(process.env.NEXT_PUBLIC_LAT || '0'),
-        lng: parseFloat(process.env.NEXT_PUBLIC_LNG || '0') 
-    });
 
     const handleSearch = async (bird: string) => {
         if (!mapCenter.lat || !mapCenter.lng) return;
 
         const data = await ebirdSearch(bird, mapCenter.lat.toString(), mapCenter.lng.toString());
+
         setResults(data);
     };
 
@@ -46,4 +46,4 @@ const Page = () => {
     );
 };
 
-export default Page;
+export default HomePage;

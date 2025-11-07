@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 
-import { ebirdObservationSearch, ebirdTaxonomySearch } from '../app/api/ebird';
+import { ebirdObservationSearch, ebirdTaxonomySearch } from '../api/ebird';
+import { BirdContext } from '../contexts/BirdContext';
 
 interface SearchBoxProps {
     onSearch: (bird: string) => void;
@@ -9,14 +10,14 @@ interface SearchBoxProps {
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
+    const { birds, setBirds } = useContext(BirdContext);
     const [bird, setBird] = useState('');
-    const [observations, setObservations] = useState<Record<string, string>>({});
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [taxonomies, setTaxonomies] = useState<Record<string, string>>({});
 
     useEffect(() => {
         ebirdObservationSearch(lat.toString(), lng.toString()).then((observations) => {
-            setObservations(observations.reduce((acc: any, obs: any) => {
+            setBirds(observations.reduce((acc: Record<string, string>, obs: any) => {
                 acc[obs.comName.toLowerCase()] = obs.speciesCode;
                 return acc;
             }, {}));
@@ -24,25 +25,25 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     }, [lat, lng]);
 
     useEffect(() => {
-        const speciesCodes = Object.values(observations);
+        const speciesCodes = Object.values(birds);
 
         if (speciesCodes.length > 0) {
             const taxonomyData = ebirdTaxonomySearch(speciesCodes);
             setTaxonomies(taxonomyData);
         }
-    }, [observations]);
+    }, [birds]);
 
     useEffect(() => {
         if (bird.length > 0) {
-            const filteredSuggestions = Object.keys(observations).filter(suggestion =>
+            const filteredSuggestions = Object.keys(birds).filter(suggestion =>
                 suggestion.toLowerCase().includes(bird.toLowerCase())
             ).sort();
             
-            if (bird.length > 4 && taxonomies[observations[filteredSuggestions[0]]]) {
-                const firstFamily = taxonomies[observations[filteredSuggestions[0]]];
-                filteredSuggestions.push(...Object.keys(observations).filter(suggestion =>
+            if (bird.length > 4 && taxonomies[birds[filteredSuggestions[0]]]) {
+                const firstFamily = taxonomies[birds[filteredSuggestions[0]]];
+                filteredSuggestions.push(...Object.keys(birds).filter(suggestion =>
                     !filteredSuggestions.includes(suggestion)
-                    && taxonomies[observations[suggestion]] === firstFamily
+                    && taxonomies[birds[suggestion]] === firstFamily
                 ).slice(0, 4 - (filteredSuggestions.length > 1 ? 1 : 0)));
             }
 
@@ -54,7 +55,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        onSearch(observations[bird]);
+        onSearch(birds[bird]);
         setBird('');
         setSuggestions([]);
     };
