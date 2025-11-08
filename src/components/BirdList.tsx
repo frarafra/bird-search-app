@@ -17,43 +17,42 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
     const [page, setPage] = useState(0);
     const batchSize = 8;
 
+    const fetchBatchImages = async (batch: Record<string, string>) => {
+        try {
+            const response = await fetch('/api/ebirdImages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(batch),
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch images');
+
+            const data = await response.json();
+            setBirdData(prev => ({
+                ...prev,
+                ...data.reduce((acc: Record<string, string>, bird: BirdData) => {
+                    acc[bird.name] = bird.imageUrl;
+                    return acc;
+                }, {}),
+            }));
+        } catch (error) {
+            console.error('Error fetching images:', error);
+        }
+    };
+
     useEffect(() => {
-        let isMounted = true;
+        if (Object.keys(birds).length > 0 && page < Math.ceil(Object.keys(birds).length / batchSize)) {
+            const currentBatch = Object.entries(birds)
+                .slice(page * batchSize, (page + 1) * batchSize)
+                .reduce((acc: Record<string, string>, [name, code]) => {
+                    acc[name] = code;
+                    return acc;
+                }, {});
 
-        const fetchImages = async () => {
             setIsLoading(true);
-            try {
-                const response = await fetch('/api/ebirdImages', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(birds)
-                });
-                console.log('response', response);
-
-                if (!response.ok) throw new Error('Failed to fetch images');
-
-                const data = await response.json();
-                if (isMounted) {
-                    setBirdData(data.reduce((acc: Record<string, string>, bird: BirdData) => {
-                        acc[bird.name] = bird.imageUrl;
-                        return acc;
-                    }, {}));
-                }
-                
-            } catch (error) {
-                console.error('Error fetching images:', error);
-            }
-            setIsLoading(false);
-        };
-
-        fetchImages();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [birds]);
+            fetchBatchImages(currentBatch).finally(() => setIsLoading(false));
+        }
+    }, [page]);
 
     const loadMore = () => {
         if (!isLoading && page < Math.ceil(Object.keys(birds).length / batchSize)) {
@@ -66,7 +65,7 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
     return (
         <div>
             <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
-                {birdNames.slice(0, (page + 1) * batchSize).map((name) => {
+                {birdNames.map((name) => {
                     const birdImageUrl = birdData[name];
                     return (
                         <li key={name} style={{

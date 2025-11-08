@@ -53,8 +53,8 @@ const fetchImagesInBatches = async (birds: Record<string, string>, batchSize: nu
             return { name, imageUrl };
         });
 
-        const resultsBatch = await Promise.allSettled(dataPromises)
-
+        const resultsBatch = await Promise.allSettled(dataPromises);
+        
         const successfulResults = resultsBatch
           .filter((result): result is PromiseFulfilledResult<{ name: string; imageUrl: string }> => result.status === 'fulfilled')
           .map(result => ({
@@ -76,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const birds = req.body;
 
             await initBrowserContext();
-
+       
             const batchSize = 2;
             const delayMs = 120;
 
