@@ -16,4 +16,5 @@ module.exports = {
     }
     return config;
   },
+  turbopack: {},
 };
