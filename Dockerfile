@@ -9,6 +9,7 @@ COPY empty.js ./
 COPY global.d.ts ./
 COPY next-env.d.ts ./
 COPY next.config.js ./
+COPY .env ./
 
 RUN npm install
 
