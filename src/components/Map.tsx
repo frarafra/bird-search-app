@@ -15,7 +15,7 @@ interface MapProps {
 }
 
 const mapIcon = new Leaflet.Icon({
-  iconUrl: markerIcon.src,
+  iconUrl: markerIcon.src ?? '/markers/marker-icon.png',
   iconSize: [12, 20],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -23,11 +23,11 @@ const mapIcon = new Leaflet.Icon({
 });
 
 const highlightedMapIcon = new Leaflet.Icon({
-    iconUrl: markerIcon.src,
-    iconSize: [25, 41], // Bigger size
-    iconAnchor: [15, 40],
-    popupAnchor: [0, -40]
-  });
+  iconUrl: markerIcon.src ?? '/markers/marker-icon.png',
+  iconSize: [25, 41], // Bigger size
+  iconAnchor: [15, 40],
+  popupAnchor: [0, -40]
+});
 
 const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (newCenter: { lat: number, lng: number }) => void }) => {
     const map = useMap();

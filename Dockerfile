@@ -1,5 +1,5 @@
 FROM node:20
-FROM mcr.microsoft.com/playwright:v1.56.1-noble AS playwright
+FROM mcr.microsoft.com/playwright:focal AS playwright
 
 WORKDIR /app
 COPY package*.json ./
@@ -12,6 +12,8 @@ COPY next.config.js ./
 COPY .env ./
 
 RUN npm install
+
+COPY node_modules/leaflet/dist/images/marker-icon.png ./public/markers/marker-icon.png
 
 RUN npm run build
 
