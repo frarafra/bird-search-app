@@ -5,18 +5,16 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install --legacy-peer-deps
+RUN npm install && npm run postinstall
 
 COPY src/ ./src/
+COPY public/ ./public/
 COPY tsconfig.json ./
 COPY empty.js ./
 COPY global.d.ts ./
 COPY next-env.d.ts ./
 COPY next.config.js ./
 COPY .env ./
-
-RUN mkdir -p /app/public/markers
-COPY node_modules/leaflet/dist/images/marker-icon.png ./public/markers/marker-icon.png
 
 RUN npm run build
 
