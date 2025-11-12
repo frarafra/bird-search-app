@@ -15,7 +15,7 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
     const [birdData, setBirdData] = useState<Record<string, string>>({});
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(0);
-    const batchSize = 8;
+    const batchSize = Number(process.env.NEXT_PUBLIC_BATCH_SIZE);
 
     const fetchBatchImages = async (batch: Record<string, string>) => {
         try {
