@@ -1,38 +1,60 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { chromium } from 'playwright';
+import axios from 'axios';
+import * as cheerio from 'cheerio';
+import { CookieJar } from 'tough-cookie'
+import { wrapper } from 'axios-cookiejar-support';
+
 import { EBIRD_SPECIES_URL } from '../../components/SearchResults';
 
-let browser: any;
-let context: any;
+const cookieJar = new CookieJar();
+wrapper(axios);
 
-const initBrowserContext = async () => {
-    if (!browser || !context) {
-        browser = await chromium.launch();
-        context = await browser.newContext();
-    }
-};
+const fetchEbirdSpeciesPage = async (initialUrl: string) => {
+  let url = initialUrl;
+  let response;
+  let redirectCount = 0;
+  const maxRedirects = 10;
 
-const closeBrowserContext = async () => {
-    if (context && browser) {
-        await context.close();
-        await browser.close();
+  try {
+    while (redirectCount < maxRedirects) {
+      response = await axios.get(url, {
+        jar: cookieJar,
+        withCredentials: true,
+        maxRedirects: 0,
+        validateStatus: () => true,
+      });
+
+      if (response.status === 302 || response.status === 301) {
+        const redirectUrl = response.headers.location;
+        url = redirectUrl;
+        redirectCount++;
+      } else if (response.status === 200) {
+        return response.data;
+      } else {
+        break;
+      }
     }
-};
+  } catch (err) {
+    console.error('Error:', err);
+    return null;
+  }
+}
 
 const fetchImageUrl = async (speciesCode: string): Promise<string | null> => {
     try {
-        if (!context) throw new Error('Browser context not initialized');
+       const url = `${EBIRD_SPECIES_URL}${speciesCode}`;
+        const response = await fetchEbirdSpeciesPage(url);
+        const $ = cheerio.load(response);
 
-        const url = `${EBIRD_SPECIES_URL}${speciesCode}`;
-        const page = await context.newPage();
-        await page.goto(url);
+        const imageElement = $('.Species-media-image');
+        if (imageElement.length === 0) {
+            console.warn(`No image found for species code: ${speciesCode}`);
+            return null;
+        }
 
-        await page.waitForSelector('.Species-media-image');
-        const imageUrl = await page.$eval('.Species-media-image', (el: HTMLImageElement) => el.src);
+        const imageUrl = $(imageElement).attr('src');
 
-        await page.close();
-
-        return imageUrl;
+        return imageUrl || null; 
     } catch (error) {
         console.error(`Error fetching image for species code ${speciesCode}:`, error);
         return null;
@@ -74,15 +96,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         if (req.method === 'POST') {
             const birds = req.body;
-
-            await initBrowserContext();
-       
+     
             const batchSize = 2;
             const delayMs = 120;
 
             const successfulResults = await fetchImagesInBatches(birds, batchSize, delayMs);
             console.log('Fetched image results:', successfulResults);
-            //await closeBrowserContext();
 
             res.status(200).json(successfulResults);
         } else {
