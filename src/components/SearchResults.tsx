@@ -13,12 +13,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, setHoveredResult
     return (
         <div>
             {results.length > 0 && (
-                <h2>
+                <h4>
                     Search Results for{' '}
                     <a href={`${EBIRD_SPECIES_URL}${results[0].speciesCode}`} target="_blank" rel="noopener noreferrer">
                         {results[0].comName}
                     </a>
-                </h2>
+                </h4>
             )}
             <ul>
                 {results.map(result => (
@@ -27,7 +27,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ results, setHoveredResult
                         onMouseEnter={() => setHoveredResultId(result.subId)}
                         onMouseLeave={() => setHoveredResultId(null)}
                     >                        
-                        <h3>{result.locName}</h3>
+                        <h5>{result.locName}</h5>
                         <p>{result.obsDt}</p>
                     </li>
                 ))}

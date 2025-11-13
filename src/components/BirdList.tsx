@@ -1,6 +1,7 @@
 'use client';
 
 import React, { FC, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 interface BirdData {
     name: string;
@@ -16,6 +17,8 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(0);
     const batchSize = Number(process.env.NEXT_PUBLIC_BATCH_SIZE);
+
+    const router = useRouter();
 
     const fetchBatchImages = async (batch: Record<string, string>) => {
         try {
@@ -66,7 +69,11 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
         <div>
             <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
                 {birdNames.map((name) => {
+                    const speciesCode = birds[name];
                     const birdImageUrl = birdData[name];
+
+                    const handleClick = () => router.push(`/?species=${speciesCode}`);
+
                     return (
                         <li key={name} style={{
                             cursor: 'default',
@@ -77,9 +84,27 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
                             alignItems: 'center'
                         }}>
                             {birdImageUrl && (
-                                <img src={birdImageUrl} alt={`${name}`} style={{ width: '40px', height: 'auto', marginRight: '8px' }} />
+                                <img 
+                                    src={birdImageUrl} 
+                                    alt={`${name}`}
+                                    style={{
+                                        width: '40px',
+                                        height: 'auto',
+                                        marginRight: '8px',
+                                        transition: 'transform 0.3s ease-in-out',
+                                        cursor: 'pointer'
+                                    }}
+                                    onMouseOver={(e) => {
+                                        (e.target as HTMLElement).style.transform = 'scale(2)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        (e.target as HTMLElement).style.transform = 'scale(1)';
+                                    }}
+                                />
                             )}
-                            {name}
+                            <span onClick={handleClick} style={{ cursor: 'pointer' }}>
+                                {name}
+                            </span>
                         </li>
                     );
                 })}
