@@ -25,12 +25,15 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     }, [lat, lng]);
 
     useEffect(() => {
-        const speciesCodes = Object.values(birds);
-
-        if (speciesCodes.length > 0) {
-            const taxonomyData = ebirdTaxonomySearch(speciesCodes);
-            setTaxonomies(taxonomyData);
+        async function fetchTaxonomies() {
+            const speciesCodes = Object.values(birds);
+            if (speciesCodes.length > 0) {
+                const taxonomyData = await ebirdTaxonomySearch(speciesCodes);
+                setTaxonomies(taxonomyData);
+            }
         }
+
+        fetchTaxonomies();
     }, [birds]);
 
     useEffect(() => {

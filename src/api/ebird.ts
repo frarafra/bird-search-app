@@ -42,22 +42,33 @@ export async function ebirdSearch(bird: string, newLat?: string, newLng?: string
     return eBirdFetch(`${EBIRD_API_URL}/${bird}/?lat=${newLat || process.env.NEXT_PUBLIC_LAT}&lng=${newLng || process.env.NEXT_PUBLIC_LNG}`);
 }
 
-export function ebirdTaxonomySearch(speciesCodes: string[]) {
-    let newTaxonomies: Record<string, string> = {};
+function parseCSVAsync(csvString: string, options = {}) {
+  return new Promise((resolve, reject) => {
+    parse(csvString, {
+        ...options,
+        complete: resolve,
+        error: reject,
+    });
+  });
+}
 
-    for (const speciesCode of speciesCodes) {
-        try {
-            parse(`${EBIRD_TAXONOMY_API_URL}${speciesCode}`, {
-                download: true,
-                complete: function(results: TaxonomyResponse) {
-                    if (results.data && results.data.length > 0) {
-                        newTaxonomies[speciesCode] = results.data[1][results.data[0].indexOf('FAMILY_CODE')];
-                    }                        
-                }
-            });
-        } catch (error) {
-            console.error(`Failed to fetch taxonomy for species code ${speciesCode}:`, error);
+export async function ebirdTaxonomySearch(speciesCodes: string[]) {
+    const parsePromises = speciesCodes.map((speciesCode) => parseCSVAsync(`${EBIRD_TAXONOMY_API_URL}${speciesCode}`, { download: true }));
+
+    const results = await Promise.allSettled(parsePromises);
+
+    let taxonomies: Record<string, string> = {};
+    results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+            const res = result.value as TaxonomyResponse;
+            const data = res.data;
+            if (data && data.length > 0) {
+                taxonomies[speciesCodes[index]] = data[1][data[0].indexOf('FAMILY_CODE')];
+            }
+        } else if (result.status === 'rejected') {
+            console.error(`Failed to fetch taxonomy for species code ${speciesCodes[index]}:`, result.reason);
         }
-    }
-    return newTaxonomies;
+    });
+
+    return taxonomies;
 }
