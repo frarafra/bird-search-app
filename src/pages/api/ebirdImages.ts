@@ -3,8 +3,17 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CookieJar } from 'tough-cookie'
 import { wrapper } from 'axios-cookiejar-support';
+import Redis from 'ioredis';
 
 import { EBIRD_SPECIES_URL } from '../../components/SearchResults';
+
+const redis = new Redis({
+  port: Number(process.env.NEXT_PUBLIC_REDIS_PORT),
+  host: process.env.NEXT_PUBLIC_REDIS_HOST,
+  username: process.env.NEXT_PUBLIC_REDIS_USER,
+  password: process.env.NEXT_PUBLIC_REDIS_PWD,
+  db: 0,
+});
 
 const cookieJar = new CookieJar();
 wrapper(axios);
@@ -41,6 +50,12 @@ const fetchEbirdSpeciesPage = async (initialUrl: string) => {
 }
 
 const fetchImageUrl = async (speciesCode: string): Promise<string | null> => {
+    const cachedImageUrl = await redis.get(speciesCode);
+
+    if (cachedImageUrl) {
+        return JSON.parse(cachedImageUrl);
+    }
+
     try {
        const url = `${EBIRD_SPECIES_URL}${speciesCode}`;
         const response = await fetchEbirdSpeciesPage(url);
@@ -53,6 +68,8 @@ const fetchImageUrl = async (speciesCode: string): Promise<string | null> => {
         }
 
         const imageUrl = $(imageElement).attr('src');
+
+        await redis.set(speciesCode, JSON.stringify(imageUrl), 'EX', 30 * 60 * 24);
 
         return imageUrl || null; 
     } catch (error) {
