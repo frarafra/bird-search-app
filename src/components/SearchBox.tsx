@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 
-import { ebirdObservationSearch, ebirdTaxonomySearch } from '../api/ebird';
+import { ebirdObservationSearch } from '../lib/ebird';
 import { BirdContext } from '../contexts/BirdContext';
 
 interface SearchBoxProps {
@@ -15,6 +15,22 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [taxonomies, setTaxonomies] = useState<Record<string, string>>({});
 
+    const fetchTaxonomies = async (speciesCodes: string[]) => {
+        try {
+            const response = await fetch(`/api/taxonomy?speciesCodes=${speciesCodes.join(',')}`);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch taxonomies: ${response.statusText}`);
+            }
+
+            const taxonomies = await response.json();
+            
+            setTaxonomies(taxonomies);
+        } catch (error) {
+            console.error('Error fetching taxonomies:', error);
+        }
+    };
+
     useEffect(() => {
         ebirdObservationSearch(lat.toString(), lng.toString()).then((observations) => {
             setBirds(observations.reduce((acc: Record<string, string>, obs: any) => {
@@ -25,15 +41,10 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     }, [lat, lng]);
 
     useEffect(() => {
-        async function fetchTaxonomies() {
-            const speciesCodes = Object.values(birds);
-            if (speciesCodes.length > 0) {
-                const taxonomyData = await ebirdTaxonomySearch(speciesCodes);
-                setTaxonomies(taxonomyData);
-            }
+        const speciesCodes = Object.values(birds);
+        if (speciesCodes.length > 0) {
+            fetchTaxonomies(speciesCodes);
         }
-
-        fetchTaxonomies();
     }, [birds]);
 
     useEffect(() => {

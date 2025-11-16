@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 
 import { BirdContext } from '../contexts/BirdContext';
-import { ebirdSearch } from '../api/ebird';
+import { ebirdSearch } from '../lib/ebird';
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
 import { Result } from '../types';

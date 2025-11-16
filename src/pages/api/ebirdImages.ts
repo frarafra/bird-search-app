@@ -3,20 +3,14 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { CookieJar } from 'tough-cookie'
 import { wrapper } from 'axios-cookiejar-support';
-import Redis from 'ioredis';
 
+import { getRedisClient } from '../../client/redis';
 import { EBIRD_SPECIES_URL } from '../../components/SearchResults';
-
-const redis = new Redis({
-  port: Number(process.env.NEXT_PUBLIC_REDIS_PORT),
-  host: process.env.NEXT_PUBLIC_REDIS_HOST,
-  username: process.env.NEXT_PUBLIC_REDIS_USER,
-  password: process.env.NEXT_PUBLIC_REDIS_PWD,
-  db: 0,
-});
 
 const cookieJar = new CookieJar();
 wrapper(axios);
+
+const redis = getRedisClient();
 
 const fetchEbirdSpeciesPage = async (initialUrl: string) => {
   let url = initialUrl;
@@ -50,7 +44,7 @@ const fetchEbirdSpeciesPage = async (initialUrl: string) => {
 }
 
 const fetchImageUrl = async (speciesCode: string): Promise<string | null> => {
-    const cachedImageUrl = await redis.get(speciesCode);
+    const cachedImageUrl = await redis.get(`${speciesCode}-img`);
 
     if (cachedImageUrl) {
         return JSON.parse(cachedImageUrl);
@@ -69,7 +63,7 @@ const fetchImageUrl = async (speciesCode: string): Promise<string | null> => {
 
         const imageUrl = $(imageElement).attr('src');
 
-        await redis.set(speciesCode, JSON.stringify(imageUrl), 'EX', 30 * 60 * 24);
+        await redis.set(`${speciesCode}-img`, JSON.stringify(imageUrl), 'EX', 30 * 24 * 60 * 60);
 
         return imageUrl || null; 
     } catch (error) {

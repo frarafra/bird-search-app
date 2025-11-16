@@ -19,7 +19,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-leaflet": "5.0.0",
-    "tough-cookie": "^6.0.0"
+    "tough-cookie": "6.0.0"
   },
   "devDependencies": {
     "@types/leaflet": "1.9.20",
