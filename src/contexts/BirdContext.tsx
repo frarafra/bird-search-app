@@ -11,16 +11,20 @@ interface BirdContextType {
         lat: number;
         lng: number;
     }>>;
+    taxonomies: Record<string, string>;
+    setTaxonomies: React.Dispatch<React.SetStateAction<Record<string, string>>>;
 }
 
 export const BirdContext = createContext<BirdContextType>({
     birds: {},
     setBirds: () => {},
+    taxonomies: {},
+    setTaxonomies: () => {},
     mapCenter: {
         lat: parseFloat(process.env.NEXT_PUBLIC_LAT || '0'),
         lng: parseFloat(process.env.NEXT_PUBLIC_LNG || '0')
     },
-    setMapCenter: () => {}
+    setMapCenter: () => {},
 });
 
 interface BirdProviderProps {
@@ -29,6 +33,7 @@ interface BirdProviderProps {
 
 export const BirdProvider: FC<BirdProviderProps> = ({ children }) => {
     const [birds, setBirds] = useState<Record<string, string>>({});
+    const [taxonomies, setTaxonomies] = useState<Record<string, string>>({});
     const [mapCenter, setMapCenter] = useState<{
         lat: number;
         lng: number;
@@ -38,7 +43,7 @@ export const BirdProvider: FC<BirdProviderProps> = ({ children }) => {
     });
 
     return (
-        <BirdContext.Provider value={{ birds, setBirds, mapCenter, setMapCenter }}>
+        <BirdContext.Provider value={{ birds, setBirds, taxonomies, setTaxonomies, mapCenter, setMapCenter }}>
             {children}
         </BirdContext.Provider>
     );

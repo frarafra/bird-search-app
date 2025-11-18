@@ -10,10 +10,12 @@ interface BirdData {
 
 interface BirdListProps {
     birds: Record<string, string>;
+    taxonomies: Record<string, string>;
 }
 
-const BirdList: FC<BirdListProps> = ({ birds }) => {
+const BirdList: FC<BirdListProps> = ({ birds, taxonomies }) => {
     const [birdData, setBirdData] = useState<Record<string, string>>({});
+    const [orderedBirds, setOrderedBirds] = useState<[string, string][]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(0);
     const batchSize = Number(process.env.NEXT_PUBLIC_BATCH_SIZE);
@@ -43,9 +45,81 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
         }
     };
 
+    const fetchTaxonomyGroups = async () => {
+        try {
+            const response = await fetch('/api/taxonomy/groups');
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch taxonomies: ${response.statusText}`);
+            }
+
+            const taxonomies = await response.json();
+
+            return taxonomies;
+        } catch (error) {
+            console.error('Error fetching taxonomies:', error);
+            return [];
+        }
+    };
+
+    const sortBirdsByTaxonomy = (
+        birds: Record<string, string>,
+        taxonomies: Record<string, string>,
+        orderedGroups: string[]
+    ) => {
+        const findGroupIndex = (group: string): number => {
+                let index = orderedGroups.indexOf(group);
+                if (index !== -1) return index;
+
+                const taxons = group.split(/\s+/);
+                for (let i = 0; i < orderedGroups.length; i++) {
+                    const taxonsSorted = orderedGroups[i].split(/\s+/);
+                    if (taxons.some(taxon => taxon !== 'and' && taxonsSorted.includes(taxon))) {
+                        index = i;
+                    }
+                }
+
+                return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+            };
+
+        const transformNameForSorting = (name: string): string => {
+            if (!name) return '';
+            const parts = name.split(' ').reverse().join(', ');
+            return parts;
+        };
+
+        return Object.entries(birds).sort(([name1, speciesCode1], [name2, speciesCode2]) => {
+            const group1 = taxonomies[speciesCode1] || '';
+            const group2 = taxonomies[speciesCode2] || '';
+
+            if (!group1) return 1;
+            if (!group2) return -1;
+
+            const index1 = findGroupIndex(group1);
+            const index2 = findGroupIndex(group2);
+
+            if (index1 !== index2) {
+                return index1 - index2;
+            }
+
+            return transformNameForSorting(name1).localeCompare(transformNameForSorting(name2));
+        });
+    };
+
     useEffect(() => {
-        if (Object.keys(birds).length > 0 && page < Math.ceil(Object.keys(birds).length / batchSize)) {
-            const currentBatch = Object.entries(birds)
+        const initializeTaxonomyGroups = async () => {
+            const orderedGroups = await fetchTaxonomyGroups();
+            if (Object.keys(birds).length > 0 && orderedGroups.length > 0) {
+                setOrderedBirds(sortBirdsByTaxonomy(birds, taxonomies, orderedGroups));
+            }
+        };
+
+        initializeTaxonomyGroups();
+    }, [birds, taxonomies]);
+
+    useEffect(() => {
+        if (orderedBirds.length > 0 && page < Math.ceil(orderedBirds.length / batchSize)) {
+            const currentBatch = orderedBirds
                 .slice(page * batchSize, (page + 1) * batchSize)
                 .reduce((acc: Record<string, string>, [name, code]) => {
                     acc[name] = code;
@@ -55,7 +129,7 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
             setIsLoading(true);
             fetchBatchImages(currentBatch).finally(() => setIsLoading(false));
         }
-    }, [page]);
+    }, [orderedBirds, page]);
 
     const loadMore = () => {
         if (!isLoading && page < Math.ceil(Object.keys(birds).length / batchSize)) {
@@ -63,14 +137,11 @@ const BirdList: FC<BirdListProps> = ({ birds }) => {
         }
     };
 
-    const birdNames = Object.keys(birdData);
-
     return (
         <div>
             <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
-                {birdNames.map((name) => {
+                {Object.entries(birdData).map(([name, birdImageUrl]) => {
                     const speciesCode = birds[name];
-                    const birdImageUrl = birdData[name];
 
                     const handleClick = () => router.push(`/?species=${speciesCode}`);
 

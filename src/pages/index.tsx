@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 
 import { BirdContext } from '../contexts/BirdContext';
-import { ebirdSearch } from '../lib/ebird';
 import SearchBox from '../components/SearchBox';
 import SearchResults from '../components/SearchResults';
 import { Result } from '../types';
@@ -25,9 +24,15 @@ const HomePage = () => {
     const getBirdObservations = async (bird: string) => {
         if (!bird ||!mapCenter.lat || !mapCenter.lng) return;
 
-        const data = await ebirdSearch(bird, mapCenter.lat.toString(), mapCenter.lng.toString());
-
-        setResults(data);
+        let observations = [];
+        try {
+            const response = await fetch(`/api/ebirdObservations?bird=${bird}&lat=${mapCenter.lat}&lng=${mapCenter.lng}`);
+            observations = await response.json();
+        } catch (error) {
+            console.error(error);
+            return {};
+        }
+        setResults(observations);
     };
     
     useEffect(() => {

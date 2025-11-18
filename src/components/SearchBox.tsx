@@ -1,6 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
 
-import { ebirdObservationSearch } from '../lib/ebird';
 import { BirdContext } from '../contexts/BirdContext';
 
 interface SearchBoxProps {
@@ -10,14 +9,31 @@ interface SearchBoxProps {
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
-    const { birds, setBirds } = useContext(BirdContext);
+    const { birds, setBirds, taxonomies, setTaxonomies } = useContext(BirdContext);
     const [bird, setBird] = useState('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [taxonomies, setTaxonomies] = useState<Record<string, string>>({});
+
+    const fetchBirds = async (newLat?: string, newLng?: string) => {
+        try {
+            const response = await fetch(`/api/ebirdSpeciesSearch?lat=${newLat}&lng=${newLng}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch birds: ${response.statusText}`);
+            }
+
+            const birds = await response.json();
+            
+            setBirds(birds.reduce((acc: Record<string, string>, obs: any) => {
+                acc[obs.comName.toLowerCase()] = obs.speciesCode;
+                return acc;
+            }, {}));
+        } catch (error) {
+            console.error('Error fetching birds:', error);
+        }
+    };
 
     const fetchTaxonomies = async (speciesCodes: string[]) => {
         try {
-            const response = await fetch(`/api/taxonomy?speciesCodes=${speciesCodes.join(',')}`);
+            const response = await fetch(`/api/taxonomy/species?speciesCodes=${speciesCodes.join(',')}`);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch taxonomies: ${response.statusText}`);
@@ -32,12 +48,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
     };
 
     useEffect(() => {
-        ebirdObservationSearch(lat.toString(), lng.toString()).then((observations) => {
-            setBirds(observations.reduce((acc: Record<string, string>, obs: any) => {
-                acc[obs.comName.toLowerCase()] = obs.speciesCode;
-                return acc;
-            }, {}));
-        });
+        fetchBirds(lat.toString(), lng.toString());  
     }, [lat, lng]);
 
     useEffect(() => {

@@ -3,11 +3,11 @@ import BirdList from '../components/BirdList';
 import { BirdContext } from '../contexts/BirdContext';
 
 const BirdsPage = () => {
-    const { birds } = useContext(BirdContext);
+    const { birds, taxonomies } = useContext(BirdContext);
 
     return (
         <div>
-            {Object.keys(birds).length > 0 && <BirdList birds={birds} />}
+            {Object.keys(birds).length > 0 && <BirdList birds={birds} taxonomies={taxonomies} />}
         </div>
     );
 };

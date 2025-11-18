@@ -1,7 +1,7 @@
 import { parse } from 'papaparse';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { getRedisClient } from '../../client/redis';
+import { getRedisClient } from '../../../client/redis';
 
 const redis = getRedisClient();
 
@@ -28,7 +28,7 @@ async function ebirdTaxonomySearch(speciesCodes: string[]) {
 
         const parsedData: TaxonomyResponse = await parseCSVAsync(`${EBIRD_TAXONOMY_API_URL}${speciesCode}`);
     
-        return parsedData?.data?.[1]?.[parsedData?.data?.[0]?.indexOf('FAMILY_CODE')];
+        return parsedData?.data?.[1]?.[parsedData?.data?.[0]?.indexOf('FAMILY_COM_NAME')];
     });
 
     const results = await Promise.allSettled(parsePromises);
@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const taxonomies = await ebirdTaxonomySearch(speciesCodes.split(','));
     res.status(200).json(taxonomies);
   } catch (error) {
-    console.error('Error in /api/taxonomy:', error);
+    console.error('Error in /api/taxonomy/speciesr:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
