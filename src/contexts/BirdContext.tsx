@@ -3,6 +3,8 @@ import { createContext, FC, ReactNode, useState } from 'react';
 interface BirdContextType {
     birds: Record<string, string>;
     setBirds: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+    birdImages: Record<string, string>;
+    setBirdImages: React.Dispatch<React.SetStateAction<Record<string, string>>>;
     mapCenter: {
         lat: number;
         lng: number;
@@ -13,11 +15,15 @@ interface BirdContextType {
     }>>;
     taxonomies: Record<string, string>;
     setTaxonomies: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+    page: number;
+    setPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export const BirdContext = createContext<BirdContextType>({
     birds: {},
     setBirds: () => {},
+    birdImages: {},
+    setBirdImages: ()=> {},
     taxonomies: {},
     setTaxonomies: () => {},
     mapCenter: {
@@ -25,6 +31,8 @@ export const BirdContext = createContext<BirdContextType>({
         lng: parseFloat(process.env.NEXT_PUBLIC_LNG || '0')
     },
     setMapCenter: () => {},
+    page: 0,
+    setPage: () => {}
 });
 
 interface BirdProviderProps {
@@ -33,6 +41,7 @@ interface BirdProviderProps {
 
 export const BirdProvider: FC<BirdProviderProps> = ({ children }) => {
     const [birds, setBirds] = useState<Record<string, string>>({});
+    const [birdImages, setBirdImages] = useState<Record<string, string>>({});
     const [taxonomies, setTaxonomies] = useState<Record<string, string>>({});
     const [mapCenter, setMapCenter] = useState<{
         lat: number;
@@ -41,9 +50,11 @@ export const BirdProvider: FC<BirdProviderProps> = ({ children }) => {
         lat: parseFloat(process.env.NEXT_PUBLIC_LAT || '0'),
         lng: parseFloat(process.env.NEXT_PUBLIC_LNG || '0')
     });
+    const [page, setPage] = useState(0);
 
     return (
-        <BirdContext.Provider value={{ birds, setBirds, taxonomies, setTaxonomies, mapCenter, setMapCenter }}>
+        <BirdContext.Provider value={{ birds, setBirds, birdImages, setBirdImages, 
+            taxonomies, setTaxonomies, mapCenter, setMapCenter, page, setPage }}>
             {children}
         </BirdContext.Provider>
     );

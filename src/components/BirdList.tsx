@@ -1,7 +1,9 @@
 'use client';
 
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+
+import { BirdContext } from '../contexts/BirdContext';
 
 interface BirdData {
     name: string;
@@ -14,10 +16,9 @@ interface BirdListProps {
 }
 
 const BirdList: FC<BirdListProps> = ({ birds, taxonomies }) => {
-    const [birdData, setBirdData] = useState<Record<string, string>>({});
+    const { birdImages, setBirdImages, page, setPage } = useContext(BirdContext);
     const [orderedBirds, setOrderedBirds] = useState<[string, string][]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [page, setPage] = useState(0);
     const batchSize = Number(process.env.NEXT_PUBLIC_BATCH_SIZE);
 
     const router = useRouter();
@@ -33,7 +34,7 @@ const BirdList: FC<BirdListProps> = ({ birds, taxonomies }) => {
             if (!response.ok) throw new Error('Failed to fetch images');
 
             const data = await response.json();
-            setBirdData(prev => ({
+            setBirdImages(prev => ({
                 ...prev,
                 ...data.reduce((acc: Record<string, string>, bird: BirdData) => {
                     acc[bird.name] = bird.imageUrl;
@@ -140,7 +141,7 @@ const BirdList: FC<BirdListProps> = ({ birds, taxonomies }) => {
     return (
         <div>
             <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
-                {Object.entries(birdData).map(([name, birdImageUrl]) => {
+                {Object.entries(birdImages).map(([name, birdImageUrl]) => {
                     const speciesCode = birds[name];
 
                     const handleClick = () => router.push(`/?species=${speciesCode}`);
