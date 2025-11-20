@@ -4,60 +4,13 @@ import { BirdContext } from '../contexts/BirdContext';
 
 interface SearchBoxProps {
     onSearch: (bird: string) => void;
-    lat: number;
-    lng: number;
 }
 
-const SearchBox: React.FC<SearchBoxProps> = ({ onSearch, lat, lng }) => {
-    const { birds, setBirds, taxonomies, setTaxonomies } = useContext(BirdContext);
+const SearchBox: React.FC<SearchBoxProps> = ({ onSearch }) => {
     const [bird, setBird] = useState('');
+    const { birds, taxonomies } = useContext(BirdContext);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-
-    const fetchBirds = async (newLat?: string, newLng?: string) => {
-        try {
-            const response = await fetch(`/api/ebirdSpeciesSearch?lat=${newLat}&lng=${newLng}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch birds: ${response.statusText}`);
-            }
-
-            const birds = await response.json();
-            
-            setBirds(birds.reduce((acc: Record<string, string>, obs: any) => {
-                acc[obs.comName.toLowerCase()] = obs.speciesCode;
-                return acc;
-            }, {}));
-        } catch (error) {
-            console.error('Error fetching birds:', error);
-        }
-    };
-
-    const fetchTaxonomies = async (speciesCodes: string[]) => {
-        try {
-            const response = await fetch(`/api/taxonomy/species?speciesCodes=${speciesCodes.join(',')}`);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch taxonomies: ${response.statusText}`);
-            }
-
-            const taxonomies = await response.json();
-            
-            setTaxonomies(taxonomies);
-        } catch (error) {
-            console.error('Error fetching taxonomies:', error);
-        }
-    };
-
-    useEffect(() => {
-        fetchBirds(lat.toString(), lng.toString());  
-    }, [lat, lng]);
-
-    useEffect(() => {
-        const speciesCodes = Object.values(birds);
-        if (speciesCodes.length > 0) {
-            fetchTaxonomies(speciesCodes);
-        }
-    }, [birds]);
-
+    
     useEffect(() => {
         if (bird.length > 0) {
             const filteredSuggestions = Object.keys(birds).filter(suggestion =>
