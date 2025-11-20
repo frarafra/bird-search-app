@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import Leaflet from 'leaflet';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import { BirdContext } from '../contexts/BirdContext';
 
 import { Result } from '../types';
 
@@ -31,9 +32,12 @@ const highlightedMapIcon = new Leaflet.Icon({
 
 const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (newCenter: { lat: number, lng: number }) => void }) => {
     const map = useMap();
+    const { setBirdImages, setPage } = useContext(BirdContext);
   
     useEffect(() => {
       const handleMoveEnd = () => {
+        setBirdImages({});
+        setPage(0);
         const center = map.getCenter();
         onMoveEnd({ lat: center.lat, lng: center.lng });
       };
