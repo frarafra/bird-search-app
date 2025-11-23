@@ -1,4 +1,4 @@
-import { createContext, FC, ReactNode, useState } from 'react';
+import { createContext, FC, ReactNode, useEffect, useState } from 'react';
 
 interface BirdContextType {
     birds: Record<string, string>;
@@ -51,6 +51,11 @@ export const BirdProvider: FC<BirdProviderProps> = ({ children }) => {
         lng: parseFloat(process.env.NEXT_PUBLIC_LNG || '0')
     });
     const [page, setPage] = useState(0);
+    
+    useEffect(() => {
+        setPage(0);
+        setBirdImages({});
+    }, [mapCenter])
 
     return (
         <BirdContext.Provider value={{ birds, setBirds, birdImages, setBirdImages, 

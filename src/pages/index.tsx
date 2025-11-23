@@ -77,13 +77,11 @@ const HomePage = () => {
     };
 
     useEffect(() => {
-        console.log('coordinates', lat, lng);
         fetchBirds(lat.toString(), lng.toString());  
     }, [lat, lng]);
 
     useEffect(() => {
         const speciesCodes = Object.values(birds);
-        console.log('birds', speciesCodes.length);
         if (speciesCodes.length > 0) {
             fetchTaxonomies(speciesCodes);
         }

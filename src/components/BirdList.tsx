@@ -1,6 +1,4 @@
-'use client';
-
-import React, { FC, useContext, useEffect, useState } from 'react';
+import React, { FC, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 import { BirdContext } from '../contexts/BirdContext';

@@ -36,8 +36,6 @@ const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (newCenter: { lat: number,
   
     useEffect(() => {
       const handleMoveEnd = () => {
-        setBirdImages({});
-        setPage(0);
         const center = map.getCenter();
         onMoveEnd({ lat: center.lat, lng: center.lng });
       };
