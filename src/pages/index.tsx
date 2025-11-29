@@ -15,10 +15,9 @@ const Map = dynamic(() => import('../components/Map'), {
 
 const HomePage = () => {
     const router = useRouter();
-    const { species } = router.query;
-    
-    const { mapCenter, setMapCenter } = useContext(BirdContext);
-    const { birds, setBirds, setTaxonomies } = useContext(BirdContext);
+    const { lat: latParam, lng: lngParam, species } = router.query;
+
+    const { birds, setBirds, mapCenter, setMapCenter, setTaxonomies } = useContext(BirdContext);
     const [observations, setObservations] = useState([]);
     const [hoveredResultId, setHoveredResultId] = useState<number | null>(null);
 
@@ -75,6 +74,18 @@ const HomePage = () => {
     const handleSearch = async (bird: string) => {
         getBirdObservations(bird);
     };
+
+    const setMapCenterFromQueryParams = (lat: string | undefined, lng: string | undefined) => {
+        if (lat && lng) {
+            const parsedLat = parseFloat(lat);
+            const parsedLng = parseFloat(lng);
+            setMapCenter({ lat: parsedLat, lng: parsedLng });
+        }
+    };
+
+    useEffect(() => {
+        setMapCenterFromQueryParams(latParam as string, lngParam as string);
+    }, [latParam, lngParam]);
 
     useEffect(() => {
         fetchBirds(lat.toString(), lng.toString());  

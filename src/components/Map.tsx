@@ -32,7 +32,6 @@ const highlightedMapIcon = new Leaflet.Icon({
 
 const MapEventsHandler = ({ onMoveEnd }: { onMoveEnd: (newCenter: { lat: number, lng: number }) => void }) => {
     const map = useMap();
-    const { setBirdImages, setPage } = useContext(BirdContext);
   
     useEffect(() => {
       const handleMoveEnd = () => {
